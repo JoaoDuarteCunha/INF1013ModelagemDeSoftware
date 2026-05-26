@@ -14,10 +14,21 @@ class SessaoSerializer(serializers.ModelSerializer):
 
 class AssentoSessaoSerializer(serializers.ModelSerializer):
     assento_label = serializers.SerializerMethodField()
+    fila = serializers.CharField(source="assento.fila", read_only=True)
+    numero = serializers.IntegerField(source="assento.numero", read_only=True)
 
     class Meta:
         model = AssentoSessao
-        fields = "__all__"
+        fields = [
+            "id",
+            "sessao",
+            "assento",
+            "assento_label",
+            "fila",
+            "numero",
+            "status",
+            "reservado_ate",
+        ]
 
     def get_assento_label(self, obj):
         return f"{obj.assento.fila}{obj.assento.numero}"
