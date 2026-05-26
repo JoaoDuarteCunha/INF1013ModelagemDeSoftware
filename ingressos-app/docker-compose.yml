@@ -1,0 +1,36 @@
+services:
+  web:
+    build:
+      context: ./backend
+    container_name: ingressos_web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:16
+    container_name: ingressos_db
+    environment:
+      POSTGRES_DB: ingressos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ingressos_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: ingressos_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  ingressos_postgres_data:
