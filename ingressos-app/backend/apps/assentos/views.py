@@ -1,3 +1,8 @@
-from django.shortcuts import render
+from rest_framework.viewsets import ModelViewSet
+from .models import Assento
+from .serializers import AssentoSerializer
 
-# Create your views here.
+
+class AssentoViewSet(ModelViewSet):
+    queryset = Assento.objects.select_related("sala").all()
+    serializer_class = AssentoSerializer
