@@ -13,6 +13,14 @@ from .services import (
     AssentoInvalidoError,
 )
 
+from apps.vendas.models import Venda
+from apps.vendas.serializers import VendaSerializer
+from apps.vendas.services import (
+    confirmar_venda,
+    ReservaInvalidaError,
+    PagamentoRecusadoError,
+)
+
 
 class SessaoViewSet(ModelViewSet):
     queryset = Sessao.objects.select_related(
@@ -73,4 +81,50 @@ class SessaoViewSet(ModelViewSet):
                 "assentos": serializer.data,
             },
             status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="confirmar-venda",
+    )
+    def confirmar_venda_action(self, request, pk=None):
+        sessao = self.get_object()
+
+        itens = request.data.get("itens", [])
+        forma_pagamento = request.data.get("forma_pagamento")
+        pagamento_aprovado = request.data.get(
+            "pagamento_aprovado",
+            True,
+        )
+
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Autenticação obrigatória."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            venda, _ = confirmar_venda(
+                usuario=request.user,
+                sessao=sessao,
+                itens=itens,
+                forma_pagamento=forma_pagamento,
+                canal=Venda.Canal.WEB,
+                pagamento_aprovado=pagamento_aprovado,
+            )
+        except ReservaInvalidaError as error:
+            return Response(
+                {"detail": str(error)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except PagamentoRecusadoError as error:
+            return Response(
+                {"detail": str(error)},
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
+        return Response(
+            VendaSerializer(venda).data,
+            status=status.HTTP_201_CREATED,
         )

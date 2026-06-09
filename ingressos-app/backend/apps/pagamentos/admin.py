@@ -1,3 +1,16 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Pagamento
+
+
+@admin.register(Pagamento)
+class PagamentoAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "venda",
+        "forma",
+        "status",
+        "valor",
+        "criado_em",
+    )
+    list_filter = ("forma", "status")
