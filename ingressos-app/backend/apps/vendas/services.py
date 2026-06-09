@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from apps.pagamentos.models import Pagamento
 from apps.sessoes.models import AssentoSessao
-
+from datetime import timedelta
 from .models import Venda, Ingresso
 
 
@@ -14,6 +14,13 @@ class ReservaInvalidaError(Exception):
 
 
 class PagamentoRecusadoError(Exception):
+    pass
+
+
+PRAZO_MINIMO_CANCELAMENTO_HORAS = 2
+
+
+class VendaNaoCancelavelError(Exception):
     pass
 
 
@@ -150,3 +157,64 @@ def confirmar_venda(
     venda.save(update_fields=["status"])
 
     return venda, ingressos
+
+
+@transaction.atomic
+def cancelar_venda(*, venda, usuario):
+    venda = (
+        Venda.objects.select_for_update()
+        .select_related("sessao", "pagamento")
+        .prefetch_related("ingressos__assento_sessao")
+        .get(pk=venda.pk)
+    )
+
+    if venda.usuario_id != usuario.id:
+        raise VendaNaoCancelavelError(
+            "Você não possui permissão para cancelar esta venda."
+        )
+
+    if venda.status != Venda.Status.CONFIRMADA:
+        raise VendaNaoCancelavelError(
+            "Somente vendas confirmadas podem ser canceladas."
+        )
+
+    limite_cancelamento = timezone.now() + timedelta(
+        hours=PRAZO_MINIMO_CANCELAMENTO_HORAS
+    )
+
+    if venda.sessao.inicio <= limite_cancelamento:
+        raise VendaNaoCancelavelError(
+            "A venda não pode ser cancelada próximo ao horário da sessão."
+        )
+
+    try:
+        pagamento = venda.pagamento
+    except Pagamento.DoesNotExist as error:
+        raise VendaNaoCancelavelError(
+            "A venda não possui pagamento registrado."
+        ) from error
+
+    if pagamento.status != Pagamento.Status.APROVADO:
+        raise VendaNaoCancelavelError("O pagamento da venda não está aprovado.")
+
+    ingressos = venda.ingressos.select_related(
+        "assento_sessao",
+        "assento_sessao__assento",
+    ).all()
+
+    for ingresso in ingressos:
+        assento_sessao = AssentoSessao.objects.select_for_update().get(
+            pk=ingresso.assento_sessao_id
+        )
+
+        assento_sessao.status = AssentoSessao.Status.DISPONIVEL
+        assento_sessao.reservado_ate = None
+        assento_sessao.save(update_fields=["status", "reservado_ate"])
+
+    pagamento.status = Pagamento.Status.ESTORNADO
+    pagamento.save(update_fields=["status"])
+
+    venda.status = Venda.Status.CANCELADA
+    venda.save(update_fields=["status"])
+
+    return venda
