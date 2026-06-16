@@ -21,30 +21,76 @@ from apps.vendas.services import (
     PagamentoRecusadoError,
 )
 from apps.cupons.services import CupomInvalidoError
+from datetime import datetime, time
+
+from django.utils import timezone
 
 
 class SessaoViewSet(ModelViewSet):
-    queryset = Sessao.objects.select_related(
-        "filme",
-        "sala",
-        "sala__cinema",
-    ).all()
     serializer_class = SessaoSerializer
 
-    @action(detail=True, methods=["get"])
-    def assentos(self, request, pk=None):
-        sessao = self.get_object()
+    def get_queryset(self):
+        queryset = Sessao.objects.select_related(
+            "filme",
+            "sala",
+            "sala__cinema",
+        ).all()
 
-        garantir_assentos_da_sessao(sessao)
-        liberar_reservas_expiradas(sessao)
+        params = getattr(self.request, "query_params", self.request.GET)
 
-        assentos = AssentoSessao.objects.select_related(
-            "assento",
-            "sessao",
-        ).filter(sessao=sessao)
+        filme_id = params.get("filme")
+        cinema_id = params.get("cinema")
+        sala_id = params.get("sala")
+        data = params.get("data")
+        ativas = params.get("ativas")
+        futuras = params.get("futuras")
 
-        serializer = AssentoSessaoSerializer(assentos, many=True)
-        return Response(serializer.data)
+        if filme_id:
+            queryset = queryset.filter(filme_id=filme_id)
+
+        if cinema_id:
+            queryset = queryset.filter(sala__cinema_id=cinema_id)
+
+        if sala_id:
+            queryset = queryset.filter(sala_id=sala_id)
+
+        if data:
+            try:
+                data_convertida = datetime.strptime(
+                    data,
+                    "%Y-%m-%d",
+                ).date()
+
+                inicio_dia = timezone.make_aware(
+                    datetime.combine(data_convertida, time.min)
+                )
+                fim_dia = timezone.make_aware(
+                    datetime.combine(data_convertida, time.max)
+                )
+
+                queryset = queryset.filter(inicio__range=(inicio_dia, fim_dia))
+            except ValueError:
+                queryset = queryset.none()
+
+        if ativas is not None:
+            ativas_normalizado = ativas.lower()
+
+            if ativas_normalizado in ["true", "1", "sim", "yes"]:
+                queryset = queryset.filter(ativa=True)
+
+            elif ativas_normalizado in ["false", "0", "nao", "não", "no"]:
+                queryset = queryset.filter(ativa=False)
+
+        if futuras is not None:
+            futuras_normalizado = futuras.lower()
+
+            if futuras_normalizado in ["true", "1", "sim", "yes"]:
+                queryset = queryset.filter(inicio__gte=timezone.now())
+
+            elif futuras_normalizado in ["false", "0", "nao", "não", "no"]:
+                queryset = queryset.filter(inicio__lt=timezone.now())
+
+        return queryset.order_by("inicio")
 
     @action(
         detail=True,

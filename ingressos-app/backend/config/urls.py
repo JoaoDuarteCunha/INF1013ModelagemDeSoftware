@@ -14,7 +14,7 @@ router.register(r"filmes", FilmeViewSet)
 router.register(r"cinemas", CinemaViewSet)
 router.register(r"salas", SalaViewSet)
 router.register(r"assentos", AssentoViewSet)
-router.register(r"sessoes", SessaoViewSet)
+router.register(r"sessoes", SessaoViewSet, basename="sessao")
 router.register(r"vendas", VendaViewSet, basename="venda")
 router.register(r"cupons", CupomViewSet, basename="cupom")
 
