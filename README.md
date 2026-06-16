@@ -152,6 +152,18 @@ Acessar o container:
 docker compose exec web bash
 ```
 
+Para rodar os testes
+
+```bash
+docker compose exec web python manage.py test
+```
+
+Para criar dados de demonstração:
+
+```bash
+docker compose exec web python manage.py seed
+```
+
 ## Status
 
 - [x] Estrutura inicial do projeto
