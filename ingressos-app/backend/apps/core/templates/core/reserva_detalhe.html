@@ -1,0 +1,61 @@
+{% extends "core/base.html" %}
+
+{% block title %}Reserva - Ingressos App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Reserva temporária</h1>
+
+    <p>
+        <strong>Filme:</strong>
+        {{ sessao.filme.nome }}
+    </p>
+
+    <p>
+        <strong>Cinema:</strong>
+        {{ sessao.sala.cinema.nome }}
+    </p>
+
+    <p>
+        <strong>Sala:</strong>
+        {{ sessao.sala.nome }}
+    </p>
+
+    <p>
+        <strong>Horário:</strong>
+        {{ sessao.inicio|date:"d/m/Y H:i" }}
+    </p>
+
+    <p>
+        <strong>Preço base:</strong>
+        R$ {{ sessao.preco_base }}
+    </p>
+</div>
+
+<div class="card">
+    <h2>Assentos reservados</h2>
+
+    {% if assentos_reservados %}
+        <ul>
+            {% for item in assentos_reservados %}
+                <li>
+                    Assento {{ item.assento.fila }}{{ item.assento.numero }}
+                    {% if item.reservado_ate %}
+                        — reservado até {{ item.reservado_ate|date:"d/m/Y H:i" }}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+
+        <p class="muted">
+            Na próxima etapa, vamos escolher o tipo de ingresso, aplicar cupom e confirmar pagamento.
+        </p>
+    {% else %}
+        <p>Nenhum assento reservado foi encontrado.</p>
+    {% endif %}
+</div>
+
+<a class="btn" href="{% url 'sessao_detalhe' sessao.id %}">
+    Voltar para o mapa de assentos
+</a>
+{% endblock %}

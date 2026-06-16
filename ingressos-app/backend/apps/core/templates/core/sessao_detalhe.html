@@ -37,13 +37,36 @@
     </p>
 
     {% if assentos_sessao %}
-        <div class="grid-assentos">
-            {% for item in assentos_sessao %}
-                <div class="assento {{ item.status }}">
-                    {{ item.assento.fila }}{{ item.assento.numero }}
-                </div>
-            {% endfor %}
-        </div>
+        <form class="form-assentos" method="post" action="{% url 'reservar_assentos_front' sessao.id %}">
+            {% csrf_token %}
+
+            <div class="grid-assentos">
+                {% for item in assentos_sessao %}
+                    {% if item.status == "disponivel" %}
+                        <label class="assento-checkbox">
+                            <input
+                                type="checkbox"
+                                name="assento_ids"
+                                value="{{ item.assento.id }}"
+                            >
+                            <span class="disponivel">
+                                {{ item.assento.fila }}{{ item.assento.numero }}
+                            </span>
+                        </label>
+                    {% else %}
+                        <div class="assento {{ item.status }} assento-indisponivel">
+                            {{ item.assento.fila }}{{ item.assento.numero }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <div class="acoes">
+                <button class="btn" type="submit">
+                    Reservar assentos selecionados
+                </button>
+            </div>
+        </form>
     {% else %}
         <p>Nenhum assento encontrado para esta sessão.</p>
     {% endif %}

@@ -85,6 +85,42 @@
             background: #fee2e2;
             color: #991b1b;
         }
+
+        .form-assentos {
+            margin-top: 20px;
+        }
+
+        .assento-checkbox {
+            cursor: pointer;
+        }
+
+        .assento-checkbox input {
+            display: none;
+        }
+
+        .assento-checkbox span {
+            display: block;
+            text-align: center;
+            padding: 10px 0;
+            border-radius: 6px;
+            font-weight: bold;
+            border: 2px solid transparent;
+        }
+
+        .assento-checkbox input:checked + span {
+            border-color: #2563eb;
+            background: #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        .assento-indisponivel {
+            opacity: 0.65;
+        }
+
+        .acoes {
+            margin-top: 24px;
+        }
+
     </style>
 </head>
 <body>
@@ -93,6 +129,13 @@
 </header>
 
 <main>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="card">
+                <strong>{{ message }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
     {% block content %}{% endblock %}
 </main>
 </body>
