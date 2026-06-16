@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+
+{% block title %}Filmes - Ingressos App{% endblock %}
+
+{% block content %}
+<h1>Filmes em cartaz</h1>
+
+{% if filmes %}
+    {% for filme in filmes %}
+        <div class="card">
+            <h2>{{ filme.nome }}</h2>
+            <p class="muted">
+                {{ filme.genero }} |
+                {{ filme.duracao_minutos }} min |
+                {{ filme.formato }}
+            </p>
+            <p>{{ filme.sinopse }}</p>
+
+            <a class="btn" href="{% url 'filme_detalhe' filme.id %}">
+                Ver sessões
+            </a>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <p>Nenhum filme cadastrado.</p>
+        <p>Execute o seed para criar dados iniciais:</p>
+        <pre>docker compose exec web python manage.py seed</pre>
+    </div>
+{% endif %}
+{% endblock %}

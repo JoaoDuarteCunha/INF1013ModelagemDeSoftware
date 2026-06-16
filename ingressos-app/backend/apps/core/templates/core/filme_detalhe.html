@@ -1,0 +1,50 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ filme.nome }} - Ingressos App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>{{ filme.nome }}</h1>
+    <p class="muted">
+        {{ filme.genero }} |
+        {{ filme.duracao_minutos }} min |
+        {{ filme.formato }}
+    </p>
+    <p>{{ filme.sinopse }}</p>
+</div>
+
+<h2>Sessões disponíveis</h2>
+
+{% if sessoes %}
+    {% for sessao in sessoes %}
+        <div class="card">
+            <h3>{{ sessao.sala.cinema.nome }} - {{ sessao.sala.nome }}</h3>
+
+            <p>
+                <strong>Início:</strong>
+                {{ sessao.inicio|date:"d/m/Y H:i" }}
+            </p>
+
+            <p>
+                <strong>Fim:</strong>
+                {{ sessao.fim|date:"d/m/Y H:i" }}
+            </p>
+
+            <p>
+                <strong>Preço base:</strong>
+                R$ {{ sessao.preco_base }}
+            </p>
+
+            <a class="btn" href="{% url 'sessao_detalhe' sessao.id %}">
+                Escolher assentos
+            </a>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <p>Não há sessões futuras para este filme.</p>
+    </div>
+{% endif %}
+
+<a href="/">Voltar para filmes</a>
+{% endblock %}

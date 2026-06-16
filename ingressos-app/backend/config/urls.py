@@ -19,6 +19,7 @@ router.register(r"vendas", VendaViewSet, basename="venda")
 router.register(r"cupons", CupomViewSet, basename="cupom")
 
 urlpatterns = [
+    path("", include("apps.core.urls")),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
     path(
