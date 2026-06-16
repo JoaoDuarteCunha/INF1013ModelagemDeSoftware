@@ -20,6 +20,7 @@ from apps.vendas.services import (
     ReservaInvalidaError,
     PagamentoRecusadoError,
 )
+from apps.cupons.services import CupomInvalidoError
 
 
 class SessaoViewSet(ModelViewSet):
@@ -97,6 +98,7 @@ class SessaoViewSet(ModelViewSet):
             "pagamento_aprovado",
             True,
         )
+        codigo_cupom = request.data.get("codigo_cupom")
 
         if not request.user.is_authenticated:
             return Response(
@@ -110,6 +112,7 @@ class SessaoViewSet(ModelViewSet):
                 sessao=sessao,
                 itens=itens,
                 forma_pagamento=forma_pagamento,
+                codigo_cupom=codigo_cupom,
                 canal=Venda.Canal.WEB,
                 pagamento_aprovado=pagamento_aprovado,
             )
@@ -122,6 +125,11 @@ class SessaoViewSet(ModelViewSet):
             return Response(
                 {"detail": str(error)},
                 status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+        except CupomInvalidoError as error:
+            return Response(
+                {"detail": str(error)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         return Response(

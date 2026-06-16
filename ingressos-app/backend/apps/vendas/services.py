@@ -8,6 +8,12 @@ from apps.sessoes.models import AssentoSessao
 from datetime import timedelta
 from .models import Venda, Ingresso
 
+from apps.cupons.services import (
+    buscar_cupom_valido,
+    calcular_desconto,
+    registrar_utilizacao,
+)
+
 
 class ReservaInvalidaError(Exception):
     pass
@@ -51,6 +57,7 @@ def confirmar_venda(
     sessao,
     itens,
     forma_pagamento,
+    codigo_cupom=None,
     canal=Venda.Canal.WEB,
     pagamento_aprovado=True,
 ):
@@ -83,7 +90,10 @@ def confirmar_venda(
     tipo_por_assento = {item["assento_id"]: item["tipo"] for item in itens}
 
     valor_bruto = Decimal("0.00")
+    valor_desconto = Decimal("0.00")
+    valor_final = Decimal("0.00")
     precos = {}
+    cupom = None
 
     for assento_sessao in assentos_sessao:
         tipo = tipo_por_assento[assento_sessao.assento_id]
@@ -104,14 +114,19 @@ def confirmar_venda(
         precos[assento_sessao.assento_id] = preco
         valor_bruto += preco
 
+        cupom = buscar_cupom_valido(codigo_cupom)
+        valor_desconto = calcular_desconto(cupom, valor_bruto)
+        valor_final = valor_bruto - valor_desconto
+
     venda = Venda.objects.create(
         usuario=usuario,
         sessao=sessao,
+        cupom=cupom,
         status=Venda.Status.PENDENTE,
         canal=canal,
         valor_bruto=valor_bruto,
-        valor_desconto=Decimal("0.00"),
-        valor_final=valor_bruto,
+        valor_desconto=valor_desconto,
+        valor_final=valor_final,
     )
 
     pagamento = Pagamento.objects.create(
@@ -155,6 +170,8 @@ def confirmar_venda(
 
     venda.status = Venda.Status.CONFIRMADA
     venda.save(update_fields=["status"])
+
+    registrar_utilizacao(cupom)
 
     return venda, ingressos
 

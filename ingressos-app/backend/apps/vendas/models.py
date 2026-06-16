@@ -4,6 +4,7 @@ from django.conf import settings
 from django.db import models
 
 from apps.sessoes.models import Sessao, AssentoSessao
+from apps.cupons.models import Cupom
 
 
 class Venda(models.Model):
@@ -51,6 +52,13 @@ class Venda(models.Model):
         max_digits=10,
         decimal_places=2,
         default=0,
+    )
+    cupom = models.ForeignKey(
+        Cupom,
+        on_delete=models.PROTECT,
+        related_name="vendas",
+        null=True,
+        blank=True,
     )
     criada_em = models.DateTimeField(auto_now_add=True)
     atualizada_em = models.DateTimeField(auto_now=True)

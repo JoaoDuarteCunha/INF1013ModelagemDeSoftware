@@ -49,6 +49,11 @@ class VendaSerializer(serializers.ModelSerializer):
         source="pagamento.forma",
         read_only=True,
     )
+    cupom_codigo = serializers.CharField(
+        source="cupom.codigo",
+        read_only=True,
+        allow_null=True,
+    )
 
     class Meta:
         model = Venda
@@ -69,4 +74,6 @@ class VendaSerializer(serializers.ModelSerializer):
             "forma_pagamento",
             "criada_em",
             "ingressos",
+            "cupom",
+            "cupom_codigo",
         ]

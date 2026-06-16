@@ -7,6 +7,7 @@ from apps.cinemas.views import CinemaViewSet, SalaViewSet
 from apps.assentos.views import AssentoViewSet
 from apps.sessoes.views import SessaoViewSet
 from apps.vendas.views import VendaViewSet
+from apps.cupons.views import CupomViewSet
 
 router = DefaultRouter()
 router.register(r"filmes", FilmeViewSet)
@@ -15,6 +16,7 @@ router.register(r"salas", SalaViewSet)
 router.register(r"assentos", AssentoViewSet)
 router.register(r"sessoes", SessaoViewSet)
 router.register(r"vendas", VendaViewSet, basename="venda")
+router.register(r"cupons", CupomViewSet, basename="cupom")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
