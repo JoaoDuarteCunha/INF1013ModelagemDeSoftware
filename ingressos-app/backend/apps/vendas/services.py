@@ -180,7 +180,7 @@ def confirmar_venda(
 def cancelar_venda(*, venda, usuario):
     venda = (
         Venda.objects.select_for_update()
-        .select_related("sessao", "pagamento")
+        .select_related("sessao")
         .prefetch_related("ingressos__assento_sessao")
         .get(pk=venda.pk)
     )
