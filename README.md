@@ -164,19 +164,284 @@ Para criar dados de demonstração:
 docker compose exec web python manage.py seed
 ```
 
-## Status
+## Dados iniciais
 
-- [x] Estrutura inicial do projeto
-- [x] Configuração com Docker
-- [x] Projeto Django criado
-- [x] PostgreSQL configurado
-- [x] Redis configurado
-- [ ] Models principais
-- [ ] Admin Django
-- [ ] APIs REST
-- [ ] Fluxo de compra
-- [ ] Reserva de assentos
-- [ ] Pagamento simulado
+Para popular o banco com dados de demonstração:
+
+```bash
+docker compose exec web python manage.py seed
+```
+
+O comando cria:
+
+- usuário administrador;
+- usuário cliente;
+- filmes;
+- cinema;
+- sala;
+- assentos;
+- sessões futuras;
+- cupons de desconto.
+
+Usuários de teste:
+
+```txt
+Admin:
+usuário: admin
+senha: admin123
+
+Cliente:
+usuário: cliente
+senha: cliente123
+```
+
+## Principais endpoints da API
+
+### Catálogo
+
+Listar filmes:
+
+```http
+GET /api/filmes/
+```
+
+Detalhar filme:
+
+```http
+GET /api/filmes/{id}/
+```
+
+### Cinemas, salas e assentos
+
+Listar cinemas:
+
+```http
+GET /api/cinemas/
+```
+
+Listar salas:
+
+```http
+GET /api/salas/
+```
+
+Listar assentos físicos:
+
+```http
+GET /api/assentos/
+```
+
+### Sessões
+
+Listar sessões:
+
+```http
+GET /api/sessoes/
+```
+
+Filtrar sessões:
+
+```http
+GET /api/sessoes/?filme={id}
+GET /api/sessoes/?cinema={id}
+GET /api/sessoes/?data=2026-06-16
+GET /api/sessoes/?ativas=true
+GET /api/sessoes/?futuras=true
+GET /api/sessoes/?filme={id}&cinema={id}&data=2026-06-16&ativas=true&futuras=true
+```
+
+Detalhar sessão:
+
+```http
+GET /api/sessoes/{id}/
+```
+
+Exibir mapa de assentos da sessão:
+
+```http
+GET /api/sessoes/{id}/assentos/
+```
+
+Reservar assentos temporariamente:
+
+```http
+POST /api/sessoes/{id}/reservar-assentos/
+```
+
+Exemplo de corpo:
+
+```json
+{
+  "assento_ids": [1, 2]
+}
+```
+
+### Venda
+
+Confirmar venda:
+
+```http
+POST /api/sessoes/{id}/confirmar-venda/
+```
+
+Exemplo de corpo sem cupom:
+
+```json
+{
+  "itens": [
+    {
+      "assento_id": 1,
+      "tipo": "inteira"
+    },
+    {
+      "assento_id": 2,
+      "tipo": "meia"
+    }
+  ],
+  "forma_pagamento": "pix",
+  "pagamento_aprovado": true
+}
+```
+
+Exemplo de corpo com cupom:
+
+```json
+{
+  "itens": [
+    {
+      "assento_id": 1,
+      "tipo": "inteira"
+    },
+    {
+      "assento_id": 2,
+      "tipo": "meia"
+    }
+  ],
+  "codigo_cupom": "PROMO20",
+  "forma_pagamento": "pix",
+  "pagamento_aprovado": true
+}
+```
+
+Listar compras do usuário autenticado:
+
+```http
+GET /api/vendas/
+```
+
+Detalhar venda:
+
+```http
+GET /api/vendas/{id}/
+```
+
+Cancelar venda:
+
+```http
+POST /api/vendas/{id}/cancelar/
+```
+
+### Cupons
+
+Listar cupons ativos:
+
+```http
+GET /api/cupons/
+```
+
+Validar cupom:
+
+```http
+POST /api/cupons/validar/
+```
+
+Exemplo de corpo:
+
+```json
+{
+  "codigo": "PROMO20",
+  "valor_bruto": "100.00"
+}
+```
+
+## Exemplos de teste com PowerShell
+
+Reservar assentos:
+
+```powershell
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8000/api/sessoes/1/reservar-assentos/" `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"assento_ids": [1, 2]}'
+```
+
+Validar cupom:
+
+```powershell
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8000/api/cupons/validar/" `
+  -Headers @{ "Content-Type" = "application/json" } `
+  -Body '{"codigo": "PROMO20", "valor_bruto": "100.00"}'
+```
+
+Confirmar venda com autenticação básica:
+
+```powershell
+$credencial = "cliente:cliente123"
+$bytes = [System.Text.Encoding]::ASCII.GetBytes($credencial)
+$token = [Convert]::ToBase64String($bytes)
+
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8000/api/sessoes/1/confirmar-venda/" `
+  -Headers @{
+    Authorization = "Basic $token"
+    "Content-Type" = "application/json"
+  } `
+  -Body '{
+    "itens": [
+      {
+        "assento_id": 1,
+        "tipo": "inteira"
+      },
+      {
+        "assento_id": 2,
+        "tipo": "meia"
+      }
+    ],
+    "codigo_cupom": "PROMO20",
+    "forma_pagamento": "pix",
+    "pagamento_aprovado": true
+  }'
+```
+
+Listar vendas do cliente autenticado:
+
+```powershell
+$credencial = "cliente:cliente123"
+$bytes = [System.Text.Encoding]::ASCII.GetBytes($credencial)
+$token = [Convert]::ToBase64String($bytes)
+
+Invoke-RestMethod `
+  -Method GET `
+  -Uri "http://localhost:8000/api/vendas/" `
+  -Headers @{ Authorization = "Basic $token" }
+```
+
+Cancelar venda:
+
+```powershell
+$credencial = "cliente:cliente123"
+$bytes = [System.Text.Encoding]::ASCII.GetBytes($credencial)
+$token = [Convert]::ToBase64String($bytes)
+
+Invoke-RestMethod `
+  -Method POST `
+  -Uri "http://localhost:8000/api/vendas/1/cancelar/" `
+  -Headers @{ Authorization = "Basic $token" }
+```
 
 ## Autores
 
