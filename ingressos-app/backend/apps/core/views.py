@@ -97,6 +97,10 @@ def reservar_assentos_front(request, sessao_id):
     if request.method != "POST":
         return redirect("sessao_detalhe", sessao_id=sessao_id)
 
+    if not request.user.is_authenticated:
+        messages.error(request, "Faça login para reservar assentos.")
+        return redirect(f"/login/?next={request.path}")
+
     sessao = get_object_or_404(
         Sessao.objects.select_related(
             "filme",
@@ -112,6 +116,7 @@ def reservar_assentos_front(request, sessao_id):
         assentos_reservados = reservar_assentos(
             sessao=sessao,
             assento_ids=[int(assento_id) for assento_id in assento_ids],
+            usuario=request.user,
         )
     except ValueError:
         messages.error(request, "Seleção de assentos inválida.")
@@ -144,6 +149,10 @@ def reserva_detalhe(request, sessao_id):
 
     liberar_reservas_expiradas(sessao)
 
+    if not request.user.is_authenticated:
+        messages.error(request, "Faça login para visualizar sua reserva.")
+        return redirect(f"/login/?next={request.path}")
+
     assentos_param = request.GET.get("assentos", "")
 
     try:
@@ -153,13 +162,20 @@ def reserva_detalhe(request, sessao_id):
     except ValueError:
         assento_ids = []
 
+    filtros = {
+        "sessao": sessao,
+        "assento_id__in": assento_ids,
+        "status": AssentoSessao.Status.RESERVADO,
+    }
+
+    if request.user.is_authenticated:
+        filtros["reservado_por"] = request.user
+    else:
+        filtros["reservado_por__isnull"] = True
+
     assentos_reservados = (
         AssentoSessao.objects.select_related("assento")
-        .filter(
-            sessao=sessao,
-            assento_id__in=assento_ids,
-            status=AssentoSessao.Status.RESERVADO,
-        )
+        .filter(**filtros)
         .order_by("assento__fila", "assento__numero")
     )
 
@@ -323,6 +339,64 @@ def cancelar_venda_front(request, venda_id):
     messages.success(request, "Compra cancelada com sucesso.")
 
     return redirect("venda_detalhe_front", venda_id=venda.id)
+
+
+def minhas_reservas(request):
+    if not request.user.is_authenticated:
+        messages.error(request, "Faça login para visualizar suas reservas.")
+        return redirect(f"/login/?next={request.path}")
+
+    reservas = (
+        AssentoSessao.objects.select_related(
+            "sessao",
+            "sessao__filme",
+            "sessao__sala",
+            "sessao__sala__cinema",
+            "assento",
+        )
+        .filter(
+            status=AssentoSessao.Status.RESERVADO,
+            reservado_por=request.user,
+            reservado_ate__gte=timezone.now(),
+        )
+        .order_by("sessao__inicio", "assento__fila", "assento__numero")
+    )
+
+    reservas_por_sessao = []
+
+    sessoes_ids = []
+
+    for reserva in reservas:
+        if reserva.sessao_id not in sessoes_ids:
+            sessoes_ids.append(reserva.sessao_id)
+
+    for sessao_id in sessoes_ids:
+        reservas_da_sessao = [
+            reserva for reserva in reservas if reserva.sessao_id == sessao_id
+        ]
+
+        assento_ids = ",".join(
+            str(reserva.assento_id) for reserva in reservas_da_sessao
+        )
+
+        reservas_por_sessao.append(
+            {
+                "sessao": reservas_da_sessao[0].sessao,
+                "reservas": reservas_da_sessao,
+                "assento_ids": assento_ids,
+                "reservado_ate": min(
+                    reserva.reservado_ate for reserva in reservas_da_sessao
+                ),
+            }
+        )
+
+    return render(
+        request,
+        "core/minhas_reservas.html",
+        {
+            "reservas_por_sessao": reservas_por_sessao,
+        },
+    )
 
 
 def login_front(request):

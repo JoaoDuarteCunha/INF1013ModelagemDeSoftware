@@ -36,6 +36,7 @@ urlpatterns = [
         views.cancelar_venda_front,
         name="cancelar_venda_front",
     ),
+    path("minhas-reservas/", views.minhas_reservas, name="minhas_reservas"),
     path("login/", views.login_front, name="login_front"),
     path("logout/", views.logout_front, name="logout_front"),
 ]

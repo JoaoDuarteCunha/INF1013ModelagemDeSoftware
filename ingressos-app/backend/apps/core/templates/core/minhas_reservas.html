@@ -1,0 +1,47 @@
+{% extends "core/base.html" %}
+
+{% block title %}Minhas reservas - Ingressos App{% endblock %}
+
+{% block content %}
+<h1>Minhas reservas</h1>
+
+{% if reservas_por_sessao %}
+    {% for item in reservas_por_sessao %}
+        <div class="card">
+            <h2>{{ item.sessao.filme.nome }}</h2>
+
+            <p>
+                <strong>Cinema:</strong>
+                {{ item.sessao.sala.cinema.nome }} - {{ item.sessao.sala.nome }}
+            </p>
+
+            <p>
+                <strong>Horário:</strong>
+                {{ item.sessao.inicio|date:"d/m/Y H:i" }}
+            </p>
+
+            <p>
+                <strong>Assentos:</strong>
+                {% for reserva in item.reservas %}
+                    {{ reserva.assento.fila }}{{ reserva.assento.numero }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+
+            <p>
+                <strong>Reservado até:</strong>
+                {{ item.reservado_ate|date:"d/m/Y H:i" }}
+            </p>
+
+            <a class="btn" href="{% url 'reserva_detalhe' item.sessao.id %}?assentos={{ item.assento_ids }}">
+                Finalizar compra
+            </a>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <p>Você não possui reservas temporárias ativas.</p>
+    </div>
+{% endif %}
+
+<a href="/">Voltar para filmes</a>
+{% endblock %}

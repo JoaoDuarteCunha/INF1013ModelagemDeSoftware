@@ -27,6 +27,7 @@ def liberar_reservas_expiradas(sessao):
     ).update(
         status=AssentoSessao.Status.DISPONIVEL,
         reservado_ate=None,
+        reservado_por=None,
     )
 
 
@@ -52,7 +53,7 @@ def garantir_assentos_da_sessao(sessao):
 
 
 @transaction.atomic
-def reservar_assentos(sessao, assento_ids):
+def reservar_assentos(sessao, assento_ids, usuario=None):
     if not assento_ids:
         raise AssentoInvalidoError("Nenhum assento foi informado.")
 
@@ -100,6 +101,7 @@ def reservar_assentos(sessao, assento_ids):
     for assento_sessao in assentos_sessao:
         assento_sessao.status = AssentoSessao.Status.RESERVADO
         assento_sessao.reservado_ate = reservado_ate
-        assento_sessao.save(update_fields=["status", "reservado_ate"])
+        assento_sessao.reservado_por = usuario
+        assento_sessao.save(update_fields=["status", "reservado_ate", "reservado_por"])
 
     return list(assentos_sessao)

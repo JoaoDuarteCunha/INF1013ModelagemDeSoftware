@@ -32,6 +32,7 @@ class CancelarVendaTestCase(TestCase):
         reservar_assentos(
             sessao=self.sessao,
             assento_ids=[self.assento.id],
+            usuario=self.usuario,
         )
 
         self.venda, _ = confirmar_venda(
@@ -84,6 +85,7 @@ class CancelarVendaTestCase(TestCase):
         reservar_assentos(
             sessao=self.sessao,
             assento_ids=[self.assento.id],
+            usuario=self.usuario,
         )
 
         nova_venda, ingressos = confirmar_venda(

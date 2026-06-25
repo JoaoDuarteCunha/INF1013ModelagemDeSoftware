@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from apps.catalogo.models import Filme
 from apps.cinemas.models import Sala
 from apps.assentos.models import Assento
@@ -46,6 +47,13 @@ class AssentoSessao(models.Model):
         default=Status.DISPONIVEL,
     )
     reservado_ate = models.DateTimeField(null=True, blank=True)
+    reservado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assentos_reservados",
+    )
 
     class Meta:
         unique_together = ("sessao", "assento")

@@ -163,7 +163,8 @@ def confirmar_venda(
 
         assento_sessao.status = AssentoSessao.Status.VENDIDO
         assento_sessao.reservado_ate = None
-        assento_sessao.save(update_fields=["status", "reservado_ate"])
+        assento_sessao.reservado_por = None
+        assento_sessao.save(update_fields=["status", "reservado_ate", "reservado_por"])
 
     pagamento.status = Pagamento.Status.APROVADO
     pagamento.save(update_fields=["status"])
@@ -226,7 +227,8 @@ def cancelar_venda(*, venda, usuario):
 
         assento_sessao.status = AssentoSessao.Status.DISPONIVEL
         assento_sessao.reservado_ate = None
-        assento_sessao.save(update_fields=["status", "reservado_ate"])
+        assento_sessao.reservado_por = None
+        assento_sessao.save(update_fields=["status", "reservado_ate", "reservado_por"])
 
     pagamento.status = Pagamento.Status.ESTORNADO
     pagamento.save(update_fields=["status"])

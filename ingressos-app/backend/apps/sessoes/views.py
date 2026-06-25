@@ -102,9 +102,16 @@ class SessaoViewSet(ModelViewSet):
         assento_ids = request.data.get("assento_ids", [])
 
         try:
+            if not request.user.is_authenticated:
+                return Response(
+                    {"detail": "Autenticação obrigatória para reservar assentos."},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+
             assentos_reservados = reservar_assentos(
                 sessao=sessao,
                 assento_ids=assento_ids,
+                usuario=request.user,
             )
         except AssentoInvalidoError as error:
             return Response(

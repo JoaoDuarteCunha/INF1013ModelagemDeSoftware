@@ -40,6 +40,7 @@ class ConfirmarVendaTestCase(TestCase):
                 self.assento_1.id,
                 self.assento_2.id,
             ],
+            usuario=self.usuario,
         )
 
     def test_deve_confirmar_venda_com_pagamento_aprovado(self):
