@@ -121,6 +121,22 @@
             margin-top: 24px;
         }
 
+        input,
+        select {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            min-width: 260px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        a {
+            color: #2563eb;
+        }
+
     </style>
 </head>
 <body>
@@ -146,6 +162,10 @@
     {% else %}
         <span style="margin-left: 24px;">
             <a href="{% url 'login_front' %}">Entrar</a>
+        </span>
+
+        <span style="margin-left: 24px;">
+            <a href="{% url 'cadastro_front' %}">Criar conta</a>
         </span>
     {% endif %}
 </header>

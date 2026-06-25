@@ -2,7 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 
 from apps.catalogo.models import Filme
 from apps.sessoes.models import Sessao, AssentoSessao
@@ -472,3 +472,54 @@ def logout_front(request):
     logout(request)
     messages.success(request, "Você saiu da sua conta.")
     return redirect("home")
+
+
+def cadastro_front(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    if request.method == "POST":
+        first_name = request.POST.get("first_name", "").strip()
+        last_name = request.POST.get("last_name", "").strip()
+        username = request.POST.get("username", "").strip()
+        email = request.POST.get("email", "").strip().lower()
+        password = request.POST.get("password", "")
+        password_confirmacao = request.POST.get("password_confirmacao", "")
+
+        if not first_name or not last_name or not username or not email:
+            messages.error(request, "Preencha todos os campos obrigatórios.")
+            return render(request, "core/cadastro.html")
+
+        if password != password_confirmacao:
+            messages.error(request, "As senhas não conferem.")
+            return render(request, "core/cadastro.html")
+
+        if len(password) < 6:
+            messages.error(request, "A senha deve ter pelo menos 6 caracteres.")
+            return render(request, "core/cadastro.html")
+
+        User = get_user_model()
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "Este nome de usuário já está em uso.")
+            return render(request, "core/cadastro.html")
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Este e-mail já está cadastrado.")
+            return render(request, "core/cadastro.html")
+
+        usuario = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        login(request, usuario)
+
+        messages.success(request, "Cadastro realizado com sucesso.")
+
+        return redirect("home")
+
+    return render(request, "core/cadastro.html")

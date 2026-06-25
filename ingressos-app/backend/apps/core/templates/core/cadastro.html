@@ -1,0 +1,82 @@
+{% extends "core/base.html" %}
+
+{% block title %}Cadastro - Ingressos App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Criar conta</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <p>
+            <label for="first_name">Nome</label><br>
+            <input
+                id="first_name"
+                type="text"
+                name="first_name"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="last_name">Sobrenome</label><br>
+            <input
+                id="last_name"
+                type="text"
+                name="last_name"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="username">Usuário</label><br>
+            <input
+                id="username"
+                type="text"
+                name="username"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="email">E-mail</label><br>
+            <input
+                id="email"
+                type="email"
+                name="email"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="password">Senha</label><br>
+            <input
+                id="password"
+                type="password"
+                name="password"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="password_confirmacao">Confirmar senha</label><br>
+            <input
+                id="password_confirmacao"
+                type="password"
+                name="password_confirmacao"
+                required
+            >
+        </p>
+
+        <button class="btn" type="submit">
+            Criar conta
+        </button>
+    </form>
+
+    <p class="muted">
+        Já tem conta?
+        <a href="{% url 'login_front' %}">Entrar</a>
+    </p>
+</div>
+{% endblock %}

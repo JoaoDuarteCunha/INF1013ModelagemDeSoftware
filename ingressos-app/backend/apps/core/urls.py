@@ -44,4 +44,5 @@ urlpatterns = [
     ),
     path("login/", views.login_front, name="login_front"),
     path("logout/", views.logout_front, name="logout_front"),
+    path("cadastro/", views.cadastro_front, name="cadastro_front"),
 ]
