@@ -6,6 +6,10 @@ from django.utils import timezone
 from apps.assentos.models import Assento
 from .models import AssentoSessao
 
+from apps.vendas.services import (
+    ReservaInvalidaError,
+)
+
 TEMPO_RESERVA_MINUTOS = 10
 
 
@@ -94,6 +98,17 @@ def reservar_assentos(sessao, assento_ids, usuario=None):
 
         raise AssentoIndisponivelError(
             f"Assento(s) indisponível(is): {', '.join(labels)}"
+        )
+
+    reservas_de_outro_usuario = [
+        item
+        for item in assentos_sessao
+        if item.reservado_por_id is not None and item.reservado_por_id != usuario.id
+    ]
+
+    if reservas_de_outro_usuario:
+        raise ReservaInvalidaError(
+            "Um ou mais assentos foram reservados por outro usuário."
         )
 
     reservado_ate = timezone.now() + timedelta(minutes=TEMPO_RESERVA_MINUTOS)
