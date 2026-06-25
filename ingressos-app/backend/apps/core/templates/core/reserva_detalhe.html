@@ -110,6 +110,25 @@
                 </button>
             </div>
         </form>
+        <form
+            method="post"
+            action="{% url 'cancelar_reserva_front' sessao.id %}"
+            style="margin-top: 16px;"
+        >
+            {% csrf_token %}
+
+            {% for item in assentos_reservados %}
+                <input
+                    type="hidden"
+                    name="assento_ids"
+                    value="{{ item.assento.id }}"
+                >
+            {% endfor %}
+
+            <button class="btn" type="submit">
+                Cancelar reserva
+            </button>
+        </form>
     {% else %}
         <p>Nenhum assento reservado foi encontrado.</p>
         <p class="muted">

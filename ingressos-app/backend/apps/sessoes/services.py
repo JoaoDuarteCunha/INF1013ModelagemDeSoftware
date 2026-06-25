@@ -21,6 +21,10 @@ class AssentoInvalidoError(Exception):
     pass
 
 
+class ReservaNaoCancelavelError(Exception):
+    pass
+
+
 def liberar_reservas_expiradas(sessao):
     agora = timezone.now()
 
@@ -120,3 +124,39 @@ def reservar_assentos(sessao, assento_ids, usuario=None):
         assento_sessao.save(update_fields=["status", "reservado_ate", "reservado_por"])
 
     return list(assentos_sessao)
+
+
+@transaction.atomic
+def cancelar_reserva_temporaria(*, sessao, assento_ids, usuario):
+    if not assento_ids:
+        raise ReservaNaoCancelavelError("Nenhum assento foi informado.")
+
+    assentos_reservados = (
+        AssentoSessao.objects.select_for_update()
+        .select_related("assento")
+        .filter(
+            sessao=sessao,
+            assento_id__in=assento_ids,
+            status=AssentoSessao.Status.RESERVADO,
+            reservado_por=usuario,
+        )
+    )
+
+    if assentos_reservados.count() != len(set(assento_ids)):
+        raise ReservaNaoCancelavelError(
+            "Uma ou mais reservas não foram encontradas para este usuário."
+        )
+
+    for assento_sessao in assentos_reservados:
+        assento_sessao.status = AssentoSessao.Status.DISPONIVEL
+        assento_sessao.reservado_ate = None
+        assento_sessao.reservado_por = None
+        assento_sessao.save(
+            update_fields=[
+                "status",
+                "reservado_ate",
+                "reservado_por",
+            ]
+        )
+
+    return list(assentos_reservados)

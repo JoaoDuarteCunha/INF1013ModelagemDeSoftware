@@ -35,6 +35,26 @@
             <a class="btn" href="{% url 'reserva_detalhe' item.sessao.id %}?assentos={{ item.assento_ids }}">
                 Finalizar compra
             </a>
+
+            <form
+                method="post"
+                action="{% url 'cancelar_reserva_front' item.sessao.id %}"
+                style="margin-top: 12px;"
+            >
+                {% csrf_token %}
+
+                {% for reserva in item.reservas %}
+                    <input
+                        type="hidden"
+                        name="assento_ids"
+                        value="{{ reserva.assento.id }}"
+                    >
+                {% endfor %}
+
+                <button class="btn" type="submit">
+                    Cancelar reserva
+                </button>
+            </form>
         </div>
     {% endfor %}
 {% else %}

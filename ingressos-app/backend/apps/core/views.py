@@ -12,6 +12,8 @@ from apps.sessoes.services import (
     reservar_assentos,
     AssentoInvalidoError,
     AssentoIndisponivelError,
+    cancelar_reserva_temporaria,
+    ReservaNaoCancelavelError,
 )
 
 from apps.pagamentos.models import Pagamento
@@ -397,6 +399,42 @@ def minhas_reservas(request):
             "reservas_por_sessao": reservas_por_sessao,
         },
     )
+
+
+def cancelar_reserva_front(request, sessao_id):
+    if request.method != "POST":
+        return redirect("minhas_reservas")
+
+    if not request.user.is_authenticated:
+        messages.error(request, "Faça login para cancelar sua reserva.")
+        return redirect(f"/login/?next={request.path}")
+
+    sessao = get_object_or_404(
+        Sessao,
+        pk=sessao_id,
+    )
+
+    assento_ids = request.POST.getlist("assento_ids")
+
+    try:
+        assento_ids = [int(assento_id) for assento_id in assento_ids]
+    except ValueError:
+        messages.error(request, "Reserva inválida.")
+        return redirect("minhas_reservas")
+
+    try:
+        cancelar_reserva_temporaria(
+            sessao=sessao,
+            assento_ids=assento_ids,
+            usuario=request.user,
+        )
+    except ReservaNaoCancelavelError as error:
+        messages.error(request, str(error))
+        return redirect("minhas_reservas")
+
+    messages.success(request, "Reserva cancelada com sucesso.")
+
+    return redirect("minhas_reservas")
 
 
 def login_front(request):

@@ -37,6 +37,11 @@ urlpatterns = [
         name="cancelar_venda_front",
     ),
     path("minhas-reservas/", views.minhas_reservas, name="minhas_reservas"),
+    path(
+        "sessoes/<int:sessao_id>/cancelar-reserva/",
+        views.cancelar_reserva_front,
+        name="cancelar_reserva_front",
+    ),
     path("login/", views.login_front, name="login_front"),
     path("logout/", views.logout_front, name="logout_front"),
 ]
