@@ -79,10 +79,10 @@ class Ingresso(models.Model):
         on_delete=models.CASCADE,
         related_name="ingressos",
     )
-    assento_sessao = models.OneToOneField(
+    assento_sessao = models.ForeignKey(
         AssentoSessao,
         on_delete=models.PROTECT,
-        related_name="ingresso",
+        related_name="ingressos",
     )
     tipo = models.CharField(
         max_length=30,

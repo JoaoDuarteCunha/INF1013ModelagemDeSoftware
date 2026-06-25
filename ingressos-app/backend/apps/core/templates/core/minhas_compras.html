@@ -21,9 +21,20 @@
             </p>
 
             <p>
+                <strong>Cinema:</strong>
+                {{ venda.sessao.sala.cinema.nome }} - {{ venda.sessao.sala.nome }}
+            </p>
+
+            <p>
                 <strong>Valor final:</strong>
                 R$ {{ venda.valor_final }}
             </p>
+
+            {% if venda.status == "cancelada" %}
+                <p class="muted">
+                    Esta compra foi cancelada.
+                </p>
+            {% endif %}
 
             <a class="btn" href="{% url 'venda_detalhe_front' venda.id %}">
                 Ver detalhes

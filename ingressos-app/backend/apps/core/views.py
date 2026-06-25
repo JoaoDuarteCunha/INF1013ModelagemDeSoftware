@@ -17,8 +17,10 @@ from apps.pagamentos.models import Pagamento
 from apps.vendas.models import Ingresso, Venda
 from apps.vendas.services import (
     confirmar_venda,
+    cancelar_venda,
     ReservaInvalidaError,
     PagamentoRecusadoError,
+    VendaNaoCancelavelError,
 )
 from apps.cupons.services import CupomInvalidoError
 
@@ -292,3 +294,31 @@ def minhas_compras(request):
             "vendas": vendas,
         },
     )
+
+
+def cancelar_venda_front(request, venda_id):
+    if request.method != "POST":
+        return redirect("venda_detalhe_front", venda_id=venda_id)
+
+    if not request.user.is_authenticated:
+        messages.error(request, "Faça login para cancelar a compra.")
+        return redirect("/admin/login/")
+
+    venda = get_object_or_404(
+        Venda,
+        pk=venda_id,
+        usuario=request.user,
+    )
+
+    try:
+        venda = cancelar_venda(
+            venda=venda,
+            usuario=request.user,
+        )
+    except VendaNaoCancelavelError as error:
+        messages.error(request, str(error))
+        return redirect("venda_detalhe_front", venda_id=venda.id)
+
+    messages.success(request, "Compra cancelada com sucesso.")
+
+    return redirect("venda_detalhe_front", venda_id=venda.id)

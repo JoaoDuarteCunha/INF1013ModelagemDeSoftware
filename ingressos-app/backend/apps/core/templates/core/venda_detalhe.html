@@ -84,6 +84,24 @@
     {% endfor %}
 </div>
 
+{% if venda.status == "confirmada" %}
+    <div class="card">
+        <h2>Cancelamento</h2>
+
+        <p>
+            Você pode solicitar o cancelamento desta compra caso ela ainda esteja dentro do prazo permitido.
+        </p>
+
+        <form method="post" action="{% url 'cancelar_venda_front' venda.id %}">
+            {% csrf_token %}
+
+            <button class="btn" type="submit">
+                Cancelar compra
+            </button>
+        </form>
+    </div>
+{% endif %}
+
 <a class="btn" href="{% url 'minhas_compras' %}">
     Ver minhas compras
 </a>

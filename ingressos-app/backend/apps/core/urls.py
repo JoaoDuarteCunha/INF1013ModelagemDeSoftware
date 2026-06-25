@@ -31,4 +31,9 @@ urlpatterns = [
         views.venda_detalhe_front,
         name="venda_detalhe_front",
     ),
+    path(
+        "minhas-compras/<int:venda_id>/cancelar/",
+        views.cancelar_venda_front,
+        name="cancelar_venda_front",
+    ),
 ]

@@ -70,3 +70,39 @@ class CancelarVendaTestCase(TestCase):
             assento_sessao.status,
             AssentoSessao.Status.DISPONIVEL,
         )
+
+    def test_deve_permitir_revender_assento_depois_do_cancelamento(self):
+        venda_cancelada = cancelar_venda(
+            venda=self.venda,
+            usuario=self.usuario,
+        )
+
+        venda_cancelada.refresh_from_db()
+
+        self.assertEqual(venda_cancelada.status, Venda.Status.CANCELADA)
+
+        reservar_assentos(
+            sessao=self.sessao,
+            assento_ids=[self.assento.id],
+        )
+
+        nova_venda, ingressos = confirmar_venda(
+            usuario=self.usuario,
+            sessao=self.sessao,
+            itens=[
+                {
+                    "assento_id": self.assento.id,
+                    "tipo": Ingresso.Tipo.INTEIRA,
+                },
+            ],
+            forma_pagamento=Pagamento.Forma.PIX,
+            pagamento_aprovado=True,
+        )
+
+        self.assertEqual(nova_venda.status, Venda.Status.CONFIRMADA)
+        self.assertEqual(len(ingressos), 1)
+
+        self.assertEqual(
+            Ingresso.objects.filter(assento_sessao__sessao=self.sessao).count(),
+            2,
+        )
