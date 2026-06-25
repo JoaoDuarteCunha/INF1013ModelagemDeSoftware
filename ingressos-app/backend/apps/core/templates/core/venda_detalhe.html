@@ -8,7 +8,14 @@
 
     <p>
         <strong>Status:</strong>
-        {{ venda.get_status_display }}
+
+        {% if venda.status == "confirmada" %}
+            <span class="status status-confirmada">{{ venda.get_status_display }}</span>
+        {% elif venda.status == "cancelada" %}
+            <span class="status status-cancelada">{{ venda.get_status_display }}</span>
+        {% else %}
+            <span class="status status-pendente">{{ venda.get_status_display }}</span>
+        {% endif %}
     </p>
 
     <p>
@@ -95,7 +102,7 @@
         <form method="post" action="{% url 'cancelar_venda_front' venda.id %}">
             {% csrf_token %}
 
-            <button class="btn" type="submit">
+            <button class="btn btn-perigo" type="submit">
                 Cancelar compra
             </button>
         </form>

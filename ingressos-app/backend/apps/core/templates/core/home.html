@@ -5,22 +5,30 @@
 {% block content %}
 <h1>Filmes em cartaz</h1>
 
-{% if filmes %}
-    {% for filme in filmes %}
-        <div class="card">
-            <h2>{{ filme.nome }}</h2>
-            <p class="muted">
-                {{ filme.genero }} |
-                {{ filme.duracao_minutos }} min |
-                {{ filme.formato }}
-            </p>
-            <p>{{ filme.sinopse }}</p>
+<p class="muted">
+    Escolha um filme para visualizar as sessões disponíveis.
+</p>
 
-            <a class="btn" href="{% url 'filme_detalhe' filme.id %}">
-                Ver sessões
-            </a>
-        </div>
-    {% endfor %}
+{% if filmes %}
+    <div class="grid-filmes">
+        {% for filme in filmes %}
+            <div class="card card-destaque">
+                <h2>{{ filme.nome }}</h2>
+
+                <p class="muted">
+                    {{ filme.genero }} |
+                    {{ filme.duracao_minutos }} min |
+                    {{ filme.formato }}
+                </p>
+
+                <p>{{ filme.sinopse }}</p>
+
+                <a class="btn" href="{% url 'filme_detalhe' filme.id %}">
+                    Ver sessões
+                </a>
+            </div>
+        {% endfor %}
+    </div>
 {% else %}
     <div class="card">
         <p>Nenhum filme cadastrado.</p>
