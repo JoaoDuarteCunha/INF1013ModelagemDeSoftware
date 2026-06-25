@@ -1,0 +1,40 @@
+{% extends "core/base.html" %}
+
+{% block title %}Minhas compras - Ingressos App{% endblock %}
+
+{% block content %}
+<h1>Minhas compras</h1>
+
+{% if vendas %}
+    {% for venda in vendas %}
+        <div class="card">
+            <h2>{{ venda.sessao.filme.nome }}</h2>
+
+            <p>
+                <strong>Status:</strong>
+                {{ venda.get_status_display }}
+            </p>
+
+            <p>
+                <strong>Sessão:</strong>
+                {{ venda.sessao.inicio|date:"d/m/Y H:i" }}
+            </p>
+
+            <p>
+                <strong>Valor final:</strong>
+                R$ {{ venda.valor_final }}
+            </p>
+
+            <a class="btn" href="{% url 'venda_detalhe_front' venda.id %}">
+                Ver detalhes
+            </a>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <p>Você ainda não possui compras.</p>
+    </div>
+{% endif %}
+
+<a href="/">Voltar para filmes</a>
+{% endblock %}

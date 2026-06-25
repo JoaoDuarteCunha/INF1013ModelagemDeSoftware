@@ -1,0 +1,94 @@
+{% extends "core/base.html" %}
+
+{% block title %}Venda Confirmada - Ingressos App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Compra confirmada</h1>
+
+    <p>
+        <strong>Status:</strong>
+        {{ venda.get_status_display }}
+    </p>
+
+    <p>
+        <strong>Filme:</strong>
+        {{ venda.sessao.filme.nome }}
+    </p>
+
+    <p>
+        <strong>Cinema:</strong>
+        {{ venda.sessao.sala.cinema.nome }}
+    </p>
+
+    <p>
+        <strong>Sala:</strong>
+        {{ venda.sessao.sala.nome }}
+    </p>
+
+    <p>
+        <strong>Sessão:</strong>
+        {{ venda.sessao.inicio|date:"d/m/Y H:i" }}
+    </p>
+
+    <p>
+        <strong>Valor bruto:</strong>
+        R$ {{ venda.valor_bruto }}
+    </p>
+
+    <p>
+        <strong>Desconto:</strong>
+        R$ {{ venda.valor_desconto }}
+    </p>
+
+    <p>
+        <strong>Valor final:</strong>
+        R$ {{ venda.valor_final }}
+    </p>
+
+    {% if venda.cupom %}
+        <p>
+            <strong>Cupom:</strong>
+            {{ venda.cupom.codigo }}
+        </p>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>Ingressos digitais</h2>
+
+    {% for ingresso in venda.ingressos.all %}
+        <div class="card">
+            <p>
+                <strong>Assento:</strong>
+                {{ ingresso.assento_sessao.assento.fila }}{{ ingresso.assento_sessao.assento.numero }}
+            </p>
+
+            <p>
+                <strong>Tipo:</strong>
+                {{ ingresso.get_tipo_display }}
+            </p>
+
+            <p>
+                <strong>Preço:</strong>
+                R$ {{ ingresso.preco }}
+            </p>
+
+            <p>
+                <strong>Código:</strong>
+                {{ ingresso.codigo }}
+            </p>
+        </div>
+    {% empty %}
+        <p>Nenhum ingresso encontrado.</p>
+    {% endfor %}
+</div>
+
+<a class="btn" href="{% url 'minhas_compras' %}">
+    Ver minhas compras
+</a>
+
+<a href="/">
+    Voltar para filmes
+</a>
+{% endblock %}

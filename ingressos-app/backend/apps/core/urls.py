@@ -16,4 +16,19 @@ urlpatterns = [
         views.reserva_detalhe,
         name="reserva_detalhe",
     ),
+    path(
+        "sessoes/<int:sessao_id>/confirmar-compra/",
+        views.confirmar_compra_front,
+        name="confirmar_compra_front",
+    ),
+    path(
+        "minhas-compras/",
+        views.minhas_compras,
+        name="minhas_compras",
+    ),
+    path(
+        "minhas-compras/<int:venda_id>/",
+        views.venda_detalhe_front,
+        name="venda_detalhe_front",
+    ),
 ]

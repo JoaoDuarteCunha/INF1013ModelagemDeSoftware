@@ -126,6 +126,20 @@
 <body>
 <header>
     <a href="/">Ingressos App</a>
+
+    <span style="margin-left: 24px;">
+        <a href="{% url 'minhas_compras' %}">Minhas compras</a>
+    </span>
+
+    {% if request.user.is_authenticated %}
+        <span style="margin-left: 24px;">
+            Olá, {{ request.user.username }}
+        </span>
+    {% else %}
+        <span style="margin-left: 24px;">
+            <a href="/admin/login/">Entrar</a>
+        </span>
+    {% endif %}
 </header>
 
 <main>

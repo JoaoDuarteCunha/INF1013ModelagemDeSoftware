@@ -33,29 +33,92 @@
 </div>
 
 <div class="card">
-    <h2>Assentos reservados</h2>
+    <h2>Confirmar compra</h2>
 
     {% if assentos_reservados %}
-        <ul>
-            {% for item in assentos_reservados %}
-                <li>
-                    Assento {{ item.assento.fila }}{{ item.assento.numero }}
-                    {% if item.reservado_ate %}
-                        — reservado até {{ item.reservado_ate|date:"d/m/Y H:i" }}
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
+        <form method="post" action="{% url 'confirmar_compra_front' sessao.id %}">
+            {% csrf_token %}
 
-        <p class="muted">
-            Na próxima etapa, vamos escolher o tipo de ingresso, aplicar cupom e confirmar pagamento.
-        </p>
+            {% for item in assentos_reservados %}
+                <div class="card">
+                    <h3>Assento {{ item.assento.fila }}{{ item.assento.numero }}</h3>
+
+                    {% if item.reservado_ate %}
+                        <p class="muted">
+                            Reservado até {{ item.reservado_ate|date:"d/m/Y H:i" }}
+                        </p>
+                    {% endif %}
+
+                    <input
+                        type="hidden"
+                        name="assento_ids"
+                        value="{{ item.assento.id }}"
+                    >
+
+                    <label for="tipo_{{ item.assento.id }}">
+                        Tipo de ingresso:
+                    </label>
+
+                    <select id="tipo_{{ item.assento.id }}" name="tipo_{{ item.assento.id }}">
+                        <option value="inteira">Inteira</option>
+                        <option value="meia">Meia-entrada</option>
+                        <option value="meia_idoso">Meia-entrada idoso</option>
+                        <option value="meia_santander">Meia Santander</option>
+                    </select>
+                </div>
+            {% endfor %}
+
+            <p>
+                <label for="codigo_cupom">
+                    Cupom de desconto:
+                </label>
+                <input
+                    id="codigo_cupom"
+                    type="text"
+                    name="codigo_cupom"
+                    placeholder="Ex: PROMO20"
+                >
+            </p>
+
+            <p>
+                <label for="forma_pagamento">
+                    Forma de pagamento:
+                </label>
+
+                <select id="forma_pagamento" name="forma_pagamento">
+                    <option value="pix">Pix</option>
+                    <option value="cartao">Cartão</option>
+                    <option value="dinheiro">Dinheiro</option>
+                </select>
+            </p>
+
+            <p>
+                <label>
+                    <input
+                        type="checkbox"
+                        name="pagamento_aprovado"
+                        value="true"
+                        checked
+                    >
+                    Simular pagamento aprovado
+                </label>
+            </p>
+
+            <div class="acoes">
+                <button class="btn" type="submit">
+                    Confirmar compra
+                </button>
+            </div>
+        </form>
     {% else %}
         <p>Nenhum assento reservado foi encontrado.</p>
+        <p class="muted">
+            A reserva pode ter expirado ou os assentos já não estão mais disponíveis.
+        </p>
     {% endif %}
 </div>
 
-<a class="btn" href="{% url 'sessao_detalhe' sessao.id %}">
+<a href="{% url 'sessao_detalhe' sessao.id %}">
     Voltar para o mapa de assentos
 </a>
 {% endblock %}
