@@ -135,9 +135,13 @@
         <span style="margin-left: 24px;">
             Olá, {{ request.user.username }}
         </span>
+
+        <span style="margin-left: 24px;">
+            <a href="{% url 'logout_front' %}">Sair</a>
+        </span>
     {% else %}
         <span style="margin-left: 24px;">
-            <a href="/admin/login/">Entrar</a>
+            <a href="{% url 'login_front' %}">Entrar</a>
         </span>
     {% endif %}
 </header>

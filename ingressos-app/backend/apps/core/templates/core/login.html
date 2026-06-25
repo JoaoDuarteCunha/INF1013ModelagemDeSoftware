@@ -1,0 +1,41 @@
+{% extends "core/base.html" %}
+
+{% block title %}Entrar - Ingressos App{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>Entrar</h1>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <p>
+            <label for="username">Usuário</label><br>
+            <input
+                id="username"
+                type="text"
+                name="username"
+                required
+            >
+        </p>
+
+        <p>
+            <label for="password">Senha</label><br>
+            <input
+                id="password"
+                type="password"
+                name="password"
+                required
+            >
+        </p>
+
+        <button class="btn" type="submit">
+            Entrar
+        </button>
+    </form>
+
+    <p class="muted">
+        Usuário de teste: cliente / cliente123
+    </p>
+</div>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.contrib.auth import authenticate, login, logout
 
 from apps.catalogo.models import Filme
 from apps.sessoes.models import Sessao, AssentoSessao
@@ -178,7 +179,7 @@ def confirmar_compra_front(request, sessao_id):
 
     if not request.user.is_authenticated:
         messages.error(request, "Faça login para confirmar a compra.")
-        return redirect("/admin/login/")
+        return redirect(f"/login/?next={request.path}")
 
     sessao = get_object_or_404(
         Sessao.objects.select_related(
@@ -243,7 +244,7 @@ def confirmar_compra_front(request, sessao_id):
 def venda_detalhe_front(request, venda_id):
     if not request.user.is_authenticated:
         messages.error(request, "Faça login para visualizar a venda.")
-        return redirect("/admin/login/")
+        return redirect(f"/login/?next={request.path}")
 
     venda = get_object_or_404(
         Venda.objects.select_related(
@@ -274,7 +275,7 @@ def venda_detalhe_front(request, venda_id):
 def minhas_compras(request):
     if not request.user.is_authenticated:
         messages.error(request, "Faça login para visualizar suas compras.")
-        return redirect("/admin/login/")
+        return redirect(f"/login/?next={request.path}")
 
     vendas = (
         Venda.objects.select_related(
@@ -302,7 +303,7 @@ def cancelar_venda_front(request, venda_id):
 
     if not request.user.is_authenticated:
         messages.error(request, "Faça login para cancelar a compra.")
-        return redirect("/admin/login/")
+        return redirect(f"/login/?next={request.path}")
 
     venda = get_object_or_404(
         Venda,
@@ -322,3 +323,40 @@ def cancelar_venda_front(request, venda_id):
     messages.success(request, "Compra cancelada com sucesso.")
 
     return redirect("venda_detalhe_front", venda_id=venda.id)
+
+
+def login_front(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+
+        usuario = authenticate(
+            request,
+            username=username,
+            password=password,
+        )
+
+        if usuario is None:
+            messages.error(request, "Usuário ou senha inválidos.")
+            return render(request, "core/login.html")
+
+        login(request, usuario)
+        messages.success(request, "Login realizado com sucesso.")
+
+        proxima_url = request.GET.get("next")
+
+        if proxima_url:
+            return redirect(proxima_url)
+
+        return redirect("home")
+
+    return render(request, "core/login.html")
+
+
+def logout_front(request):
+    logout(request)
+    messages.success(request, "Você saiu da sua conta.")
+    return redirect("home")
